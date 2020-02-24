@@ -41,8 +41,13 @@ const writeCounter = (count, callback) => {
 exports.getNextUniqueId = () => {
   counter = counter + 1;
   return zeroPaddedNumber(counter);
+  // use readCounter to determine
 };
 
+// exports.getNextUniqueId = (counter, done) => {
+//   counter++;
+//   done(zeroPaddedNumber(counter)); // when does error handling come into play?
+// };
 
 
 // Configuration -- DO NOT MODIFY //////////////////////////////////////////////
