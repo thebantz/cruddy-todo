@@ -4,9 +4,6 @@ const _ = require('underscore');
 const counter = require('./counter');
 const Promise = require('bluebird');
 
-var readFileAsync = Promise.promisify(fs.readFile);
-var readDirAsync = Promise.promisify(fs.readdir);
-
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 exports.create = (text, callback) => {
   counter.getNextUniqueId((err, id) => {
@@ -24,8 +21,6 @@ exports.create = (text, callback) => {
     }
   });
 };
-
-exports.createAsync = Promise.promisify(exports.create);
 
 exports.readAll = (callback) => {
   fs.readdir(exports.dataDir, (err, files) => {
@@ -58,8 +53,6 @@ exports.readOne = (id, callback) => {
     }
   });
 };
-
-exports.readOneAsync = Promise.promisify(exports.readOne);
 
 exports.update = (id, newText, callback) => {
   var pathName = path.join(exports.dataDir, id + '.txt');
