@@ -14,7 +14,7 @@ exports.create = (text, callback) => {
         if (err) {
           callback(new Error('could not write file'));
         } else {
-          callback(null, {id, text});
+          callback(null, { id, text });
         }
       });
     }
@@ -24,31 +24,30 @@ exports.create = (text, callback) => {
 exports.readAll = (callback) => {
   var allTodos = [];
 
-  fs.readdir(exports.dataDir, (err, files) => {
-    var result = files.map((file) => {
-      var id = file.toString().replace('.txt', '');
-      console.log('file :', file, 'err :', err);
+  // fs.readdir(exports.dataDir, (err, files) => {
+  //   var result = files.map((file) => {
+  //     var id = file.toString().replace('.txt', '');
+  //     return { id, text: id };
+  //   });
+  //   callback(null, result);
+  // });
 
-      return {id, text: id};
-    });
-    callback(null, result);
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) { callback(new Error('could not read files')); }
+    files.forEach(function (file) {
+      let fileName = file.split('.')[0];
+      let task = fs.readFile(err, file);
+      let content;
+      // fs.readFile('file', function (err, data) {
+      //   if (err) throw err;
+      //   content = data;
+      // });
+      // // console.log(content);
+      allTodos.push({ id: fileName, text: fileName });
+    })
+    callback(null, allTodos);
   });
 
-
-  // var allTodos = [];
-  // fs.readdir(exports.dataDir, (err, files) => {
-  //   files.forEach(file => {
-  //     var obj = {id: file};
-  //     allTodos.push(obj);
-  //   });
-  // });
-  // callback(null, allTodos);
-
-
-  // var data = _.map(items, (text, id) => {
-  //   return { id, text };
-  // });
-  // callback(null, data);
 };
 
 exports.readOne = (id, callback) => {
@@ -56,7 +55,7 @@ exports.readOne = (id, callback) => {
     if (err) {
       callback(new Error(`no item with id: ${id}`));
     } else {
-      callback(null, {id, text: text});
+      callback(null, { id, text: text });
     }
   });
 };
@@ -71,7 +70,7 @@ exports.update = (id, newText, callback) => {
         if (err) {
           callback(new Error('could not write file'));
         } else {
-          callback(null, {id, newText});
+          callback(null, { id, newText });
         }
       });
     }
