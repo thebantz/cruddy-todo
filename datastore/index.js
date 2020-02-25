@@ -2,6 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+const Promise = require('bluebird');
+
+var readFileAsync = Promise.promisify(fs.readFile);
+var readDirAsync = Promise.promisify(fs.readdir);
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 exports.create = (text, callback) => {
@@ -21,33 +25,28 @@ exports.create = (text, callback) => {
   });
 };
 
+exports.createAsync = Promise.promisify(exports.create);
+
 exports.readAll = (callback) => {
-  var allTodos = [];
-
-  // fs.readdir(exports.dataDir, (err, files) => {
-  //   var result = files.map((file) => {
-  //     var id = file.toString().replace('.txt', '');
-  //     return { id, text: id };
-  //   });
-  //   callback(null, result);
-  // });
-
   fs.readdir(exports.dataDir, (err, files) => {
-    if (err) { callback(new Error('could not read files')); }
-    files.forEach(function (file) {
-      let fileName = file.split('.')[0];
-      let task = fs.readFile(err, file);
-      let content;
-      // fs.readFile('file', function (err, data) {
-      //   if (err) throw err;
-      //   content = data;
-      // });
-      // // console.log(content);
-      allTodos.push({ id: fileName, text: fileName });
-    })
-    callback(null, allTodos);
-  });
+    var promises = [];
 
+    files.forEach((file) => {
+      promises.push(new Promise((resolve, reject) => {
+        fs.readFile(path.join(exports.dataDir, file), 'utf8', (err, text) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({id: file.replace('.txt', ''), text: text});
+          }
+        });
+      }));
+    });
+
+    Promise.all(promises).then((values) => {
+      callback(err, values);
+    });
+  });
 };
 
 exports.readOne = (id, callback) => {
@@ -59,6 +58,8 @@ exports.readOne = (id, callback) => {
     }
   });
 };
+
+exports.readOneAsync = Promise.promisify(exports.readOne);
 
 exports.update = (id, newText, callback) => {
   var pathName = path.join(exports.dataDir, id + '.txt');
