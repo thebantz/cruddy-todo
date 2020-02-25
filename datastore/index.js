@@ -22,6 +22,19 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
+  var allTodos = [];
+
+  fs.readdir(exports.dataDir, (err, files) => {
+    var result = files.map((file) => {
+      var id = file.toString().replace('.txt', '');
+      console.log('file :', file, 'err :', err);
+
+      return {id, text: id};
+    });
+    callback(null, result);
+  });
+
+
   // var allTodos = [];
   // fs.readdir(exports.dataDir, (err, files) => {
   //   files.forEach(file => {
@@ -39,11 +52,11 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  fs.readFile(path.join(exports.dataDir, id + '.txt'), (err, text) => {
+  fs.readFile(path.join(exports.dataDir, id + '.txt'), 'utf8', (err, text) => {
     if (err) {
       callback(new Error(`no item with id: ${id}`));
     } else {
-      callback(null, {id, text: text.toString()});
+      callback(null, {id, text: text});
     }
   });
 };
