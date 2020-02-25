@@ -2,27 +2,34 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
-// TODO: import express.js? and convert the ff crud fns into said format like items.create?
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 exports.create = (text, callback) => {
   counter.getNextUniqueId((err, id) => {
-    var pathName = path.join(exports.dataDir, id + '.txt');
-    fs.writeFile(pathName, text, (err, todo) => {
-      callback(null, {id, text});
-    });
+    if (err) {
+      callback(new Error('could not retrieve ID'));
+    } else {
+      var pathName = path.join(exports.dataDir, id + '.txt');
+      fs.writeFile(pathName, text, (err, todo) => {
+        if (err) {
+          callback(new Error('could not write file'));
+        } else {
+          callback(null, {id, text});
+        }
+      });
+    }
   });
 };
 
 exports.readAll = (callback) => {
-  var allTodos = [];
-  fs.readdir(exports.dataDir, (err, files) => {
-    files.forEach(file => {
-      var obj = {id: file};
-      allTodos.push(obj);
-    });
-  });
-  callback(null, allTodos);
+  // var allTodos = [];
+  // fs.readdir(exports.dataDir, (err, files) => {
+  //   files.forEach(file => {
+  //     var obj = {id: file};
+  //     allTodos.push(obj);
+  //   });
+  // });
+  // callback(null, allTodos);
 
 
   // var data = _.map(items, (text, id) => {
@@ -32,23 +39,30 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
-  // call the exports.readFile
+  fs.readFile(path.join(exports.dataDir, id + '.txt'), (err, text) => {
+    if (err) {
+      callback(new Error(`no item with id: ${id}`));
+    } else {
+      callback(null, {id, text: text.toString()});
+    }
+  });
 };
 
-exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+exports.update = (id, newText, callback) => {
+  var pathName = path.join(exports.dataDir, id + '.txt');
+  fs.readFile(pathName, (err, oldText) => {
+    if (err) {
+      callback(new Error(`no item with id: ${id}`));
+    } else {
+      fs.writeFile(pathName, newText, (err) => {
+        if (err) {
+          callback(new Error('could not write file'));
+        } else {
+          callback(null, {id, newText});
+        }
+      });
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
